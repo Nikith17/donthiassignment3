@@ -1,32 +1,25 @@
 version: 0.2
 
 phases:
-  install:
-    commands:
-      - echo No extra dependencies needed
-
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
+      - aws --version
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 897729119415.dkr.ecr.us-east-1.amazonaws.com
-
-      - echo Logging in to Docker Hub using Secrets Manager...
-      - export DOCKERHUB_SECRET=$(aws secretsmanager get-secret-value --secret-id dockerhub/credentials --query SecretString --output text)
-      - export DOCKERHUB_USERNAME=$(echo $DOCKERHUB_SECRET | sed -n 's/.*"username":"\([^"]*\)".*/\1/p')
-      - export DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_SECRET | sed -n 's/.*"password":"\([^"]*\)".*/\1/p')
-      - echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
 
   build:
     commands:
-      - echo Building Docker image...
+      - echo Build started on `date`
+      - echo Building the Docker image...
       - docker build --no-cache -t donthi-ecs-repo .
       - docker tag donthi-ecs-repo:latest 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest
 
   post_build:
     commands:
-      - echo Pushing Docker image to ECR...
-      - docker push 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest
-      - echo Creating imagedefinitions.json for ECS deployment...
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest || exit 1
+      - echo Writing imagedefinitions.json...
       - printf '[{"name":"donthi-flask-app","imageUri":"%s"}]' 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest > imagedefinitions.json
 
 artifacts:
