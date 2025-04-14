@@ -16,12 +16,12 @@ phases:
       - docker tag donthi-ecs-repo:latest 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest
 
   post_build:
-  commands:
-    - echo Build completed on `date`
-    - echo Pushing the Docker image...
-    - docker push 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest
-    - printf '[{"name":"donthi-flask-app","imageUri":"%s"}]' 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest > imagedefinitions.json
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest
+      - printf '[{"name":"donthi-flask-app","imageUri":"%s"}]' 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest > imagedefinitions.json
+
 artifacts:
   files:
     - imagedefinitions.json
-
