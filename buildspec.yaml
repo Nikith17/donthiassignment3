@@ -6,18 +6,21 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 897729119415.dkr.ecr.us-east-1.amazonaws.com
+
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t donthi-ecs-repo .
+      - docker build --no-cache -t donthi-ecs-repo .
       - docker tag donthi-ecs-repo:latest 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest
+
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - docker push 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest
-      - printf '[{"name":"donthi-app","imageUri":"%s"}]' 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest > imagedefinitions.json
+      - docker push 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest || exit 1
+      - echo Writing imagedefinitions.json...
+      - printf '[{"name":"donthi-ecs-repo","imageUri":"%s"}]' 897729119415.dkr.ecr.us-east-1.amazonaws.com/donthi-ecs-repo:latest > imagedefinitions.json
 
 artifacts:
   files:
